@@ -1,0 +1,5 @@
+pve_ct_template_id: 111
+ct_name: minidlna
+cfg_file: /etc/minidlna.conf
+app_name: Drs DLNA Server
+media_dir: /media

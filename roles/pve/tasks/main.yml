@@ -17,6 +17,9 @@
     delegate_to: localhost
     when: pve_unprivileged | bool
 
+  - ansible.builtin.set_fact: vmid="{{lxc_result.vmid}}"
+    when: pve_unprivileged | bool
+
   - name: Spawn new privileged container
     community.general.proxmox:
       api_user: "{{pve_api_user}}"
@@ -35,11 +38,11 @@
     when: not pve_unprivileged | bool
   
   - ansible.builtin.set_fact: vmid="{{lxc_result.vmid}}"
+    when: not pve_unprivileged | bool
   
   - name: Waiting few seconds for container to settle down...
     ansible.builtin.wait_for:
       timeout: 5
-    when: "'already' not in lxc_result.msg"
 
   
   - name: Ask api for CT size

@@ -1,0 +1,6 @@
+
+- name: Reload minidlna
+  service:
+    name: minidlna
+    state: restarted
+  delegate_to: "{{ct_ip}}"

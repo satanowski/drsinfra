@@ -40,3 +40,9 @@
         ct_name: jellyfin
       include_role:
         name: jellyfin
+
+    - name: Deploy MiniDLNA
+      vars:
+        ct_name: minidlna
+      include_role:
+        name: minidlna
