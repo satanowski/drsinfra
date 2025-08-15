@@ -3,41 +3,6 @@
   - name: Spawn a new CT
     include_role:
       name: pve
-      tasks_from: create_ct
-
-  
-  - name: Ask api for CT size
-    ansible.builtin.uri:
-      validate_certs: false
-      headers:
-        Authorization: "{{pve_http_token}}"
-      url: "{{pve_api}}/nodes/{{pve_node_name}}/lxc/{{vmid}}/config"
-      return_content: true
-    register: api_resp
-    until: api_resp.status == 200
-    delegate_to: localhost
-
-  - name: Extract current size of the CT
-    ansible.builtin.set_fact: ct_size={{ api_resp.json.data.rootfs | regex_search('size=([^,]+)', '\\1') | first }}
-
-  - name: Convert size to int
-    ansible.builtin.set_fact: ct_size={{ ct_size[:-1] | int }}
-
-  - name: Resize CT if needed
-    ansible.builtin.uri:
-      validate_certs: false
-      headers:
-        Authorization: "{{pve_http_token}}"
-      url: "{{pve_api}}/nodes/{{pve_node_name}}/lxc/{{vmid}}/resize"
-      method: PUT
-      body_format: form-urlencoded
-      body:
-        disk: rootfs
-        size: "{{ct_min_size}}G"
-      return_content: true
-    when: ct_size is defined and (ct_size | int) < ct_min_size
-    register: api_resp
-    delegate_to: localhost
 
   - name: apt get update
     ansible.builtin.apt:

@@ -1,0 +1,34 @@
+--- 
+  - name: Override variable during playbook
+    set_fact:
+      pve_unprivileged: no
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+
+  - name: apt get update
+    ansible.builtin.apt:
+      upgrade: dist
+      update_cache: yes
+      dpkg_options: 'force-confold,force-confdef'
+    delegate_to: "{{ct_ip}}"
+
+  - name: Download install script
+    get_url:
+      url: "{{jelly_sh}}"
+      dest: "/tmp/{{ct_name}}.sh"
+    delegate_to: "{{ct_ip}}"
+
+  - name: Install jelly
+    environment:
+      SKIP_CONFIRM: 1
+    ansible.builtin.shell:
+      cmd: "/bin/bash /tmp/{{ct_name}}.sh"
+    delegate_to: "{{ct_ip}}"
+
+  - name: apt get tidy up
+    ansible.builtin.apt:
+      autoremove: yes
+      purge: true
+    delegate_to: "{{ct_ip}}"

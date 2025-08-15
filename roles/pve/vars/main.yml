@@ -5,3 +5,4 @@ pve_api_user: "{{pve_user}}@pam"
 pve_ct_destination_storage: "local-lvm"
 pve_http_token: "PVEAPIToken={{pve_api_user}}!{{pve_api_token_name}}={{pve_api_token_secret}}"
 pve_api: "https://{{pve_node_ip}}:8006/api2/json"
+pve_unprivileged: yes

@@ -3,7 +3,6 @@
   - name: Spawn a new CT
     include_role:
       name: pve
-      tasks_from: create_ct
 
   - name: Ensure packages are installed
     community.general.apk:

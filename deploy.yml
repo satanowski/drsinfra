@@ -10,32 +10,33 @@
         ct_name: psql
       include_role:
         name: psql
-        tasks_from: install
 
     - name: Deploy UptimeKuma
       vars:
         ct_name: kuma
       include_role:
         name: kuma
-        tasks_from: install
 
     - name: Deploy glance
       vars:
         ct_name: glance
       include_role:
         name: glance
-        tasks_from: install
 
     - name: Deploy Trilium
       vars:
         ct_name: trilium
       include_role:
         name: trilium
-        tasks_from: install
 
     - name: Deploy Calibre
       vars:
         ct_name: calibre
       include_role:
         name: calibre
-        tasks_from: install
+
+    - name: Deploy Jellyfin
+      vars:
+        ct_name: jellyfin
+      include_role:
+        name: jellyfin
