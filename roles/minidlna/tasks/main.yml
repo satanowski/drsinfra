@@ -44,3 +44,15 @@
       state: present
     delegate_to: "{{ct_ip}}"
     notify: Reload minidlna
+
+  - name: Enable minidlna
+    ansible.builtin.service:
+      name: {{ct_name}}
+      enabled: true
+    delegate_to: "{{ct_ip}}"
+
+  - name: Turn on
+    ansible.builtin.service:
+      name: {{ct_name}}
+      state: restarted
+    delegate_to: "{{ct_ip}}"
