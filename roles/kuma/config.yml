@@ -1,0 +1,4 @@
+ct_name: kuma
+kuma_repo: https://github.com/louislam/uptime-kuma.git
+kuma_dir: /opt/uptime-kuma
+kuma_start_script:  kuma.start

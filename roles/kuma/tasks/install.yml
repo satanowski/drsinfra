@@ -1,0 +1,57 @@
+--- 
+
+  - name: Load configuration
+    ansible.builtin.include_vars:
+      file: ../config.yml
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+      tasks_from: create_ct
+
+  - name: Ensure packages are installed
+    community.general.apk:
+      name: "{{item}}"
+      no_cache: false
+      state: latest      
+    with_items:
+      - npm
+      - git
+    delegate_to: "{{ct_ip}}"
+
+  - name: Clone Kuma repo
+    git:
+      repo: "{{kuma_repo}}"
+      dest: "{{kuma_dir}}"
+      clone: yes
+      update: yes
+    delegate_to: "{{ct_ip}}"
+
+  - name: Install kuma
+    ansible.builtin.shell:
+      chdir: "{{kuma_dir}}"
+      cmd: npm run setup
+    delegate_to: "{{ct_ip}}"
+
+  - name: Create start script
+    lineinfile:
+      create: true
+      mode: u+rwx
+      owner: root
+      group: root
+      path: "/etc/local.d/{{kuma_start_script}}"
+      line: "#!/bin/sh\ncd {{kuma_dir}} && node server/server.js &"
+      state: present
+    delegate_to: "{{ct_ip}}"
+
+  - name: Enable Kuma    
+    ansible.builtin.service:
+      name: local
+      enabled: true
+    delegate_to: "{{ct_ip}}"
+
+  - name: Turn on kuma
+    ansible.builtin.service:
+      name: local
+      state: restarted
+    delegate_to: "{{ct_ip}}"

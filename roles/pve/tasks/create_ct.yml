@@ -1,0 +1,74 @@
+--- 
+  
+  - name: Load pve vars
+    ansible.builtin.include_vars:
+      file: ../config.yml
+ 
+  - name: Spawn new container
+    community.general.proxmox:
+      api_user: "{{pve_api_user}}"
+      api_token_id: "{{pve_api_token_name}}"
+      api_token_secret: "{{ pve_api_token_secret }}"
+      api_host: "{{ pve_node_ip }}"
+      node: "{{pve_node_name}}"
+      hostname: "{{ ct_name }}"
+      clone: "{{pve_ct_template_id}}"
+      clone_type: full
+      storage: "{{pve_ct_destination_storage}}"
+      state: present
+    register: lxc_result
+    delegate_to: localhost
+  
+  # - debug:
+  #     msg: "{{lxc_result}}"
+  
+  - ansible.builtin.set_fact: vmid="{{lxc_result.vmid}}"
+  
+  - name: Waiting few seconds for container to settle down...
+    ansible.builtin.wait_for:
+      timeout: 5
+    when: "'already' not in lxc_result.msg"
+  
+  - name: Start the container...
+    community.general.proxmox:
+      api_user: "{{pve_api_user}}"
+      api_token_id: "{{pve_api_token_name}}"
+      api_token_secret: "{{ pve_api_token_secret }}"
+      api_host: "{{ pve_node_ip }}"
+      node: "{{pve_node_name}}"
+      vmid: "{{vmid}}"
+      hostname: "{{ ct_name }}"
+      state: started
+    delegate_to: localhost
+    register: lxc_result
+  
+  - name: Waiting few seconds for container to start
+    ansible.builtin.wait_for:
+      timeout: 5
+    when: "'already' in lxc_result.msg"
+
+  - name: Ask api for CT interfaces
+    ansible.builtin.uri:
+      validate_certs: false
+      headers:
+        Authorization: "{{pve_http_token}}"
+      url: "{{pve_api}}/nodes/{{pve_node_name}}/lxc/{{vmid}}/interfaces"
+      return_content: true
+    register: api_resp
+    until: api_resp.status == 200
+    delegate_to: localhost
+  
+  - name: Extract IP of newly created CT
+    ansible.builtin.set_fact: ct_ip={{ api_resp | json_query("json.data | [] | [?name=='eth0'].inet") | map('regex_replace', '/.*', '') | first | regex_replace('[\n]+', '') }}
+  
+  - debug:
+      msg: "New CT ip address: '{{ct_ip}}'"
+
+  - name: Wait a bit for ssh service
+    ansible.builtin.wait_for:
+      port: 22
+      host: "{{ct_ip}}"
+      delay: 3
+      timeout: 30
+    delegate_to: localhost
+  

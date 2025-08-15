@@ -1,0 +1,8 @@
+--- 
+pve_domain: local.net
+pve_node_ip: "10.11.12.9"
+pve_api_user: "{{pve_user}}@pam"
+pve_ct_destination_storage: "local-lvm"
+pve_ct_template_id: 111
+pve_http_token: "PVEAPIToken={{pve_api_user}}!{{pve_api_token_name}}={{pve_api_token_secret}}"
+pve_api: "https://{{pve_node_ip}}:8006/api2/json"

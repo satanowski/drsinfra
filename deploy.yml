@@ -1,0 +1,27 @@
+---
+- name: Drs Infra
+  hosts: all
+  vars_files:
+    - vault.yml
+  
+  tasks:
+    # - name: Deploy psql
+    #   vars:
+    #     ct_name: psql
+    #   include_role:
+    #     name: psql
+    #     tasks_from: install
+
+    - name: Deploy UptimeKuma
+      vars:
+        ct_name: kuma
+      include_role:
+        name: kuma
+        tasks_from: install
+
+    - name: Deploy glance
+      vars:
+        ct_name: glance
+      include_role:
+        name: glance
+        tasks_from: install

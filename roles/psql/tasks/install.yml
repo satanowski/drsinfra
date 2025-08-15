@@ -1,0 +1,67 @@
+--- 
+
+  - name: Load psql vars
+    ansible.builtin.include_vars:
+      file: ../config.yml
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+      tasks_from: create_ct
+
+  - name: Ensure packages are installed
+    community.general.apk:
+      name: "{{item}}"
+      no_cache: false
+      state: latest      
+    with_items:
+      - postgresql
+      - sudo
+      - py3-psycopg2
+    delegate_to: "{{ct_ip}}"
+
+  - name: Wait until the PG is set up
+    ansible.builtin.wait_for:
+      path: /etc/postgresql/pg_hba.conf
+      state: present
+      timeout: 30
+      delay: 3
+
+  - name: Allow me to connect from my subnet
+    lineinfile:
+      path: "{{pg_hba_conf}}"
+      line: "host all {{pg_db_user}} {{pg_db_net}} md5"
+      state: present
+    delegate_to: "{{ct_ip}}"
+
+  - name: Allow connections via network
+    lineinfile:
+      path: "{{pg_conf_file}}"
+      line: "listen_addresses = '*'"
+      state: present
+    delegate_to: "{{ct_ip}}"
+    
+  - name: Turn on postgresql
+    ansible.builtin.service:
+      name: postgresql
+      enabled: true
+      state: started
+    delegate_to: "{{ct_ip}}"
+
+  - name: "Create my user"
+    community.postgresql.postgresql_user:
+      name: "{{ pg_db_user }}"
+      password: "{{ pg_db_pass }}"
+      state: present
+      role_attr_flags: LOGIN
+    delegate_to: "{{ct_ip}}"
+
+  - name: Clean up no longer needed packages
+    community.general.apk:
+      name: "{{item}}"
+      no_cache: false
+      state: removed      
+    with_items:
+      - sudo
+      - py3-psycopg2
+    delegate_to: "{{ct_ip}}"
