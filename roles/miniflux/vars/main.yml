@@ -1,0 +1,9 @@
+pve_ct_template_id: 111
+ct_name: miniflux
+db_host: 10.11.12.188
+repo_key: "miniflux/v2"
+gh_api_latest:  https://api.github.com/repos/{{repo_key}}/releases/latest
+
+db_url: "postgresql://{{ct_name}}:{{ct_name}}@{{db_host}}/{{ct_name}}?sslmode=disable"
+admin_user: "{{miniflux_admin}}"
+admin_pass: "{{miniflux_admin_pass}}"

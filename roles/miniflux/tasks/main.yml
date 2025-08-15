@@ -1,0 +1,114 @@
+--- 
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+
+  - name: Ensure packages are installed
+    community.general.apk:
+      name: "{{item}}"
+      no_cache: false
+      state: latest
+    with_items:
+      - py3-psycopg2
+    delegate_to: "{{ct_ip}}"
+
+  - name: "Create DB user for miniflux"
+    community.postgresql.postgresql_user:
+      login_db: postgres
+      login_host: "{{db_host}}"
+      login_user: "{{pg_db_user}}"
+      login_password: "{{ pg_db_pass }}"
+      name: "{{ct_name}}"
+      password: "{{ct_name}}"
+      role_attr_flags: CREATEDB,LOGIN,SUPERUSER # temporary super powers
+    delegate_to: "{{ct_ip}}"
+
+  - name: "Create a database for miniflux"
+    community.postgresql.postgresql_db:
+      login_user: "{{pg_db_user}}"
+      login_password: "{{ pg_db_pass }}"
+      login_host: "{{db_host}}"
+      name: "{{ct_name}}"
+      owner:  "{{ct_name}}"
+      comment: "db for {{ct_name}}"
+      state: present
+    delegate_to: "{{ct_ip}}"
+
+  - name: "Enable extension for miniflux"
+    community.postgresql.postgresql_ext:
+      name: "hstore"
+      db: "{{ct_name}}"
+      login_user: "{{ct_name}}"
+      login_password: "{{ ct_name }}"
+      login_host: "{{db_host}}"
+    delegate_to: "{{ct_ip}}"
+
+  - name: Get latest release info
+    uri:
+      url: "{{gh_api_latest}}"
+      return_content: yes
+    register: release_info
+
+  - name: Download newest version
+    get_url:
+      url: "{{ item.browser_download_url }}"
+      dest: "/usr/local/bin/{{ct_name}}"
+      checksum: "{{item.digest}}"
+    loop: "{{ release_info.json.assets }}"
+    when: item.browser_download_url | regex_search('miniflux-linux-amd64$')
+    delegate_to: "{{ct_ip}}"
+
+  - name: Make it executable
+    ansible.builtin.shell:
+      cmd: "chmod +x /usr/local/bin/{{ct_name}}"
+
+  - name: Setup DB
+    environment:
+      DATABASE_URL: "{{db_url}}"
+    ansible.builtin.shell:
+      cmd: "/usr/local/bin/{{ct_name}} -migrate"
+
+  - name: "Remove superpowers"
+    community.postgresql.postgresql_user:
+      login_db: postgres
+      login_host: "{{db_host}}"
+      login_user: "{{pg_db_user}}" 
+      login_password: "{{ pg_db_pass }}"
+      name: "{{ct_name}}"
+      password: "{{ct_name}}"
+      role_attr_flags: LOGIN
+    delegate_to: "{{ct_ip}}"
+
+  - name: Add a service to start the app at boot
+    copy:
+      dest: "/etc/local.d/{{ct_name}}.start"
+      content: |
+        #!/bin/sh
+
+        export CREATE_ADMIN=1
+        export ADMIN_PASSWORD={{admin_pass}}
+        export ADMIN_USERNAME={{admin_user}}
+        export DATABASE_URL={{db_url}}
+        export RUN_MIGRATIONS=1
+        export LISTEN_ADDR=0.0.0.0:80
+        nohup /usr/local/bin/{{ct_name}} &
+      mode: '0755'
+    delegate_to: "{{ct_ip}}"
+
+  - name: Add service to default runlevel (enable at boot)
+    command: rc-update add local default
+    delegate_to: "{{ct_ip}}"
+
+  - name: Start the service
+    command: "rc-service local start"
+
+  - name: Clean up no longer needed packages
+    community.general.apk:
+      name: "{{item}}"
+      no_cache: false
+      state: removed
+    with_items:
+      - sudo
+      - py3-psycopg2
+    delegate_to: "{{ct_ip}}"

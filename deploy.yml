@@ -46,3 +46,9 @@
         ct_name: minidlna
       include_role:
         name: minidlna
+
+    - name: Deploy miniflux
+      vars:
+        ct_name: miniflux
+      include_role:
+        name: miniflux

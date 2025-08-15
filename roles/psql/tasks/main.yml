@@ -32,10 +32,14 @@
     delegate_to: "{{ct_ip}}"
 
   - name: Allow me to connect from my subnet
-    lineinfile:
-      path: "{{pg_hba_conf}}"
-      line: "host all {{pg_db_user}} {{pg_db_net}} md5"
-      state: present
+    community.postgresql.postgresql_pg_hba:
+      dest: "{{pg_hba_conf}}"
+      contype: host
+      users: "all"
+      source: "{{pg_db_net}}"
+      databases: all
+      method: md5
+      create: true
     delegate_to: "{{ct_ip}}"
     notify: Reload psql
 
@@ -52,7 +56,7 @@
       name: "{{ pg_db_user }}"
       password: "{{ pg_db_pass }}"
       state: present
-      role_attr_flags: LOGIN
+      role_attr_flags: LOGIN,CREATEROLE,SUPERUSER
     delegate_to: "{{ct_ip}}"
 
   - name: Clean up no longer needed packages
