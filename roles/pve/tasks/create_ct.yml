@@ -1,8 +1,4 @@
 --- 
-  
-  - name: Load pve vars
-    ansible.builtin.include_vars:
-      file: ../config.yml
  
   - name: Spawn new container
     community.general.proxmox:
@@ -18,9 +14,6 @@
       state: present
     register: lxc_result
     delegate_to: localhost
-  
-  # - debug:
-  #     msg: "{{lxc_result}}"
   
   - ansible.builtin.set_fact: vmid="{{lxc_result.vmid}}"
   

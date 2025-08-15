@@ -1,3 +1,4 @@
+pve_ct_template_id: 111
 ct_name: kuma
 kuma_repo: https://github.com/louislam/uptime-kuma.git
 kuma_dir: /opt/uptime-kuma

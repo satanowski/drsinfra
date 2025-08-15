@@ -1,0 +1,3 @@
+pve_ct_template_id: 222 # debian
+ct_name: calibre
+ct_min_size: 2

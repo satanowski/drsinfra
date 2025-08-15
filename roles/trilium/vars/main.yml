@@ -1,3 +1,4 @@
+pve_ct_template_id: 111
 ct_name: trilium
 repo_key: TriliumNext/Trilium
 repo: https://github.com/{{repo_key}}.git

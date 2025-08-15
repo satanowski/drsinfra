@@ -1,3 +1,4 @@
+pve_ct_template_id: 111
 ct_name: glance
 glance_repo_key: glanceapp/glance
 glance_repo: https://github.com/{{glance_repo_key}}.git

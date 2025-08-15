@@ -1,9 +1,5 @@
 --- 
 
-  - name: Load configuration
-    ansible.builtin.include_vars:
-      file: ../config.yml
-
   - name: Spawn a new CT
     include_role:
       name: pve

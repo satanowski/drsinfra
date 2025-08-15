@@ -32,3 +32,10 @@
       include_role:
         name: trilium
         tasks_from: install
+
+    - name: Deploy Calibre
+      vars:
+        ct_name: calibre
+      include_role:
+        name: calibre
+        tasks_from: install
