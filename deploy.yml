@@ -5,12 +5,12 @@
     - vault.yml
   
   tasks:
-    # - name: Deploy psql
-    #   vars:
-    #     ct_name: psql
-    #   include_role:
-    #     name: psql
-    #     tasks_from: install
+    - name: Deploy psql
+      vars:
+        ct_name: psql
+      include_role:
+        name: psql
+        tasks_from: install
 
     - name: Deploy UptimeKuma
       vars:
@@ -24,4 +24,11 @@
         ct_name: glance
       include_role:
         name: glance
+        tasks_from: install
+
+    - name: Deploy Trilium
+      vars:
+        ct_name: trilium
+      include_role:
+        name: trilium
         tasks_from: install
