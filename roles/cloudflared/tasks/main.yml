@@ -1,0 +1,43 @@
+--- 
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+
+  - name: Get latest release info
+    uri:
+      url: "{{gh_api_latest}}"
+      return_content: yes
+    register: release_info
+
+  - name: Download newest version
+    get_url:
+      url: "{{ item.browser_download_url }}"
+      dest: "/opt/{{ct_name}}"
+      checksum: "{{item.digest}}"
+    loop: "{{ release_info.json.assets }}"
+    when: "item.name == 'cloudflared-linux-amd64'"
+    delegate_to: "{{ct_ip}}"
+
+  - name: make it executable
+    ansible.builtin.shell: "chmod +x /opt/{{ct_name}}"
+    delegate_to: "{{ct_ip}}"
+
+  - name: Check if cf service is installed
+    stat:
+      path: /etc/init.d/cloudflared
+    register: cf_status
+    delegate_to: "{{ct_ip}}"
+
+  - name: install cf service and run it
+    ansible.builtin.shell: "/opt/{{ct_name}} service install {{cf_token}}"
+    delegate_to: "{{ct_ip}}"
+    when: not cf_status.stat.exists
+
+  - name: start the service
+    ansible.builtin.service:
+      name: cloudflared
+      state: started
+    delegate_to: "{{ct_ip}}"
+  
+  # to be continued

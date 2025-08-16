@@ -1,0 +1,6 @@
+pve_ct_template_id: 111
+ct_name: cloudflared
+repo_key: cloudflare/cloudflared
+repo: https://github.com/{{repo_key}}.git
+gh_api_latest:  https://api.github.com/repos/{{repo_key}}/releases/latest
+cf_token: "{{cf_tunel_token}}"
