@@ -25,10 +25,13 @@
       state: directory
     delegate_to: "{{ct_ip}}"
 
-  - name: Download configuration template
-    get_url:
-      url: "{{ glance_config_template }}"
-      dest: "{{glance_config_dir}}/glance.yml"
+  - name: Copy configuration files
+    ansible.builtin.copy:
+      src: "files/"
+      dest: "{{glance_config_dir}}/"
+      mode: '0755'
+      owner: root
+      group: root
     delegate_to: "{{ct_ip}}"
 
   - name: Extract glance
