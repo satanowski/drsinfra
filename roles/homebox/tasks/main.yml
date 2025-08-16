@@ -1,0 +1,57 @@
+--- 
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+
+  - name: Get latest release info
+    uri:
+      url: "{{gh_api_latest}}"
+      return_content: yes
+    register: release_info
+
+  - name: Download newest version
+    get_url:
+      url: "{{ item.browser_download_url }}"
+      dest: "/tmp/{{ct_name}}.tar.gz"
+      checksum: "{{item.digest}}"
+    loop: "{{ release_info.json.assets }}"
+    when: "'homebox_Linux_x86_64.tar.gz' == item.name"
+    delegate_to: "{{ct_ip}}"
+
+  - name: Extract the app
+    ansible.builtin.shell:
+      chdir: "/opt"
+      cmd: "tar -xf /tmp/{{ct_name}}.tar.gz"
+    delegate_to: "{{ct_ip}}"
+
+  - name: Delete the archive
+    ansible.builtin.file:
+      path: /tmp/{{ct_name}}.tar.gz
+      state: absent
+    delegate_to: "{{ct_ip}}"
+
+  - name: Add a systemd service to start the app at boot
+    copy:
+      dest: /etc/systemd/system/{{ct_name}}.service
+      content: |
+        [Unit]
+        Description={{ct_name}} startup script
+
+        [Service]
+        WorkingDirectory=/opt
+        ExecStart=nohup ./{{ct_name}} &
+        Restart=always
+        User=root
+
+        [Install]
+        WantedBy=multi-user.target
+    notify: Reload systemd
+    delegate_to: "{{ct_ip}}"
+
+  - name: Enable sevice
+    systemd:
+      name: "{{ct_name}}.service"
+      enabled: yes
+      state: started
+    delegate_to: "{{ct_ip}}"

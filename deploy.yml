@@ -52,3 +52,9 @@
         ct_name: miniflux
       include_role:
         name: miniflux
+
+    - name: Deploy homebox
+      vars:
+        ct_name: homebox
+      include_role:
+        name: homebox
