@@ -58,3 +58,9 @@
         ct_name: homebox
       include_role:
         name: homebox
+
+    - name: Deploy navidrome
+      vars:
+        ct_name: navidrome
+      include_role:
+        name: navidrome

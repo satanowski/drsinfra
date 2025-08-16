@@ -1,0 +1,7 @@
+LogLevel = 'DEBUG'
+Scanner.Schedule = '@every 24h'
+TranscodingCacheSize = '150MiB'
+MusicFolder = '/music'
+Address = '0.0.0.0'
+DefaultLanguage = 'pl'
+EnableFavourites = true

@@ -1,0 +1,75 @@
+--- 
+
+  - name: Spawn a new CT
+    include_role:
+      name: pve
+
+  - name: Ensure packages are installed
+    community.general.apk:
+      name: "{{item}}"
+      no_cache: false
+      state: latest
+    with_items:
+      - mpv
+      - ffmpeg
+    delegate_to: "{{ct_ip}}"
+
+  - name: Get latest release info
+    uri:
+      url: "{{gh_api_latest}}"
+      return_content: yes
+    register: release_info
+
+  - name: Download newest version
+    get_url:
+      url: "{{ item.browser_download_url }}"
+      dest: "/tmp/{{ct_name}}.tar.gz"
+      checksum: "{{item.digest}}"
+    loop: "{{ release_info.json.assets }}"
+    when: item.browser_download_url | regex_search('_linux_amd64.tar.gz$')
+    delegate_to: "{{ct_ip}}"
+
+  - name: Extract the app
+    ansible.builtin.shell:
+      chdir: "/opt"
+      cmd: "tar -xf /tmp/{{ct_name}}.tar.gz"
+    delegate_to: "{{ct_ip}}"
+
+  - name: Delete the archive
+    ansible.builtin.file:
+      path: /tmp/{{ct_name}}.tar.gz
+      state: absent
+    delegate_to: "{{ct_ip}}"
+
+  - name: Put config file
+    copy:
+      src: files/navidrome.toml
+      dest: /opt/navidrome.toml
+    delegate_to: "{{ct_ip}}"
+
+  - name: Create start script
+    lineinfile:
+      create: true
+      mode: u+rwx
+      owner: root
+      group: root
+      path: "/etc/local.d/{{ct_name}}.start"
+      line: "#!/bin/sh\nnohup /opt/navidrome --configfile /opt/navidrome.toml &"
+      state: present
+    delegate_to: "{{ct_ip}}"
+
+  - name: Enable service
+    ansible.builtin.service:
+      name: local
+      enabled: true
+    delegate_to: "{{ct_ip}}"
+
+  - name: Turn on the service
+    ansible.builtin.service:
+      name: local
+      state: restarted
+    delegate_to: "{{ct_ip}}"
+
+
+
+
