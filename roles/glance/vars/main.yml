@@ -1,8 +1,8 @@
 pve_ct_template_id: 111
-ct_name: glance
-glance_repo_key: glanceapp/glance
-glance_repo: https://github.com/{{glance_repo_key}}.git
-gh_api_latest:  https://api.github.com/repos/{{glance_repo_key}}/releases/latest
-glance_config_template: https://raw.githubusercontent.com/glanceapp/glance/refs/heads/main/docs/glance.yml
-glance_start_script: glance.start
-glance_config_dir: /config
+ct_name: "glance"
+glance_repo_key: "glanceapp/glance"
+glance_repo: "https://github.com/{{ glance_repo_key }}.git"
+gh_api_latest: "https://api.github.com/repos/{{ glance_repo_key }}/releases/latest"
+glance_config_template: "https://raw.githubusercontent.com/glanceapp/glance/refs/heads/main/docs/glance.yml"
+glance_start_script: "{{ ct_name }}.start"
+glance_config_dir: "/config"

@@ -1,5 +1,5 @@
-
+---
 - name: Reload systemd
-  systemd:
-    daemon_reload: yes
-  delegate_to: "{{ct_ip}}"
+  ansible.builtin.systemd:
+    daemon_reload: true
+  delegate_to: "{{ ct_ip }}"

@@ -3,6 +3,7 @@
 - name: Spawn a new CT
   ansible.builtin.include_role:
     name: pve
+    tasks_from: create_ct
 
 - name: Ensure packages are installed
   community.general.apk:
@@ -10,8 +11,7 @@
     no_cache: false
     state: latest
   with_items:
-    - mpv
-    - ffmpeg
+    - npm
   delegate_to: "{{ ct_ip }}"
 
 - name: Get latest release info
@@ -20,34 +20,46 @@
     return_content: true
   register: release_info
 
+- name: Remember latest version tag
+  ansible.builtin.set_fact:
+    latest: "{{ release_info.json.tag_name[1:] }}"
+
 - name: Download newest version
   ansible.builtin.get_url:
     url: "{{ item.browser_download_url }}"
-    dest: "/tmp/{{ ct_name }}.tar.gz"
+    dest: "/tmp/{{ ct_name }}.tar.xz"
     checksum: "{{ item.digest }}"
-    mode: "u+rw"
+    mode: '0755'
   loop: "{{ release_info.json.assets }}"
-  when: item.browser_download_url | regex_search('_linux_amd64.tar.gz$')
+  when: "'linux-x64.tar.xz' in item.name"
   delegate_to: "{{ ct_ip }}"
 
 - name: Extract the app
   ansible.builtin.unarchive:
-    src: "/tmp/{{ ct_name }}.tar.gz"
+    src: "/tmp/{{ ct_name }}.tar.xz"
     dest: /opt
+    mode: '0755'
     remote_src: true
   delegate_to: "{{ ct_ip }}"
 
-- name: Delete the archive
+- name: Delete app archive
   ansible.builtin.file:
-    path: /tmp/{{ ct_name }}.tar.gz
+    path: "/tmp/{{ ct_name }}.tar.xz"
     state: absent
   delegate_to: "{{ ct_ip }}"
 
-- name: Put config file
-  ansible.builtin.copy:
-    src: files/navidrome.toml
-    dest: /opt/navidrome.toml
-    mode: "u+rw"
+- name: Rename the folder
+  ansible.builtin.command:
+    chdir: "/opt"
+    cmd: "mv TriliumNotes-Server-{{ latest }}-linux-x64 {{ ct_name }}"
+  delegate_to: "{{ ct_ip }}"
+
+- name: Build the app
+  ansible.builtin.shell:
+    chdir: "{{ app_dir }}"
+    cmd: |
+      npm rebuild
+      npm install better-sqlite3
   delegate_to: "{{ ct_ip }}"
 
 - name: Create start script
@@ -57,11 +69,11 @@
     owner: root
     group: root
     path: "/etc/local.d/{{ ct_name }}.start"
-    line: "#!/bin/sh\nnohup /opt/navidrome --configfile /opt/navidrome.toml &"
+    line: "#!/bin/sh\ncd /opt/{{ ct_name }} && nohup node main.cjs &"
     state: present
   delegate_to: "{{ ct_ip }}"
 
-- name: Enable service
+- name: Enable the service
   ansible.builtin.service:
     name: local
     enabled: true

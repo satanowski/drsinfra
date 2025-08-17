@@ -1,0 +1,4 @@
+---
+pve_ct_template_id: 111
+ct_name: pgadmin
+ct_min_size: 2

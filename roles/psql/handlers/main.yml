@@ -1,6 +1,6 @@
-
+---
 - name: Reload psql
-  service:
+  ansible.builtin.service:
     name: "postgresql"
     state: restarted
-  delegate_to: "{{ct_ip}}"
+  delegate_to: "{{ ct_ip }}"

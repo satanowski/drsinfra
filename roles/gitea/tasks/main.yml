@@ -1,21 +1,21 @@
---- 
+---
 
-  - name: Spawn a new CT
-    include_role:
-      name: pve
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
 
-  - name: Ensure packages are installed
-    community.general.apk:
-      name: "{{item}}"
-      no_cache: false
-      state: latest
-    with_items:
-      - gitea
-    delegate_to: "{{ct_ip}}"
+- name: Ensure packages are installed
+  community.general.apk:
+    name: "{{ item }}"
+    no_cache: false
+    state: latest
+  with_items:
+    - gitea
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Enable and start
-    ansible.builtin.service:
-      name: gitea
-      enabled: true
-      state: started
-    delegate_to: "{{ct_ip}}"
+- name: Enable and start
+  ansible.builtin.service:
+    name: gitea
+    enabled: true
+    state: started
+  delegate_to: "{{ ct_ip }}"

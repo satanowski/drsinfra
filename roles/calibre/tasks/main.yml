@@ -1,57 +1,57 @@
---- 
+---
 
-  - name: Spawn a new CT
-    include_role:
-      name: pve
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
 
-  - name: apt get update
-    ansible.builtin.apt:
-      upgrade: dist
-      update_cache: yes
-      dpkg_options: 'force-confold,force-confdef'
-    delegate_to: "{{ct_ip}}"
+- name: Apt get update
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: true
+    dpkg_options: 'force-confold,force-confdef'
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Ensure packages are installed
-    apt:
-      name: "{{item}}"
-      state: latest      
-    with_items:
-      - python3-pip
-    delegate_to: "{{ct_ip}}"
+- name: Ensure packages are installed
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - python3-pip
+  delegate_to: "{{ ct_ip }}"
 
-  - name: apt get update
-    ansible.builtin.apt:
-      autoremove: yes
-      purge: true
-    delegate_to: "{{ct_ip}}"
+- name: Apt get update
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Install the app
-    ansible.builtin.shell:
-      cmd: "pip install --break-system-packages calibreweb"
-    delegate_to: "{{ct_ip}}"
-  
+- name: Install the app
+  ansible.builtin.command:
+    cmd: "pip install --break-system-packages calibreweb"
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Add a systemd service to start the app at boot
-    copy:
-      dest: /etc/systemd/system/{{ct_name}}.service
-      content: |
-        [Unit]
-        Description={{ct_name}} startup script
 
-        [Service]
-        ExecStart=/usr/local/bin/cps
-        Restart=always
-        User=root
+- name: Add a systemd service to start the app at boot
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/{{ ct_name }}.service
+    content: |
+      [Unit]
+      Description={{ ct_name }} startup script
 
-        [Install]
-        WantedBy=multi-user.target
-    notify: Reload systemd
-    delegate_to: "{{ct_ip}}"
+      [Service]
+      ExecStart=/usr/local/bin/cps
+      Restart=always
+      User=root
 
-  - name: Enable sevice
-    systemd:
-      name: "{{ct_name}}.service"
-      enabled: yes
-      state: started
-    delegate_to: "{{ct_ip}}"
+      [Install]
+      WantedBy=multi-user.target
+    mode: "u+rwx"
+  notify: Reload systemd
+  delegate_to: "{{ ct_ip }}"
 
+- name: Enable sevice
+  ansible.builtin.systemd:
+    name: "{{ ct_name }}.service"
+    enabled: true
+    state: started
+  delegate_to: "{{ ct_ip }}"

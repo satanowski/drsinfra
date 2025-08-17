@@ -17,78 +17,78 @@ pages:
             groups:
               - title: Narzędzia
                 links:
-                 - title: HomeAssistant
-                   url: http://has.local.net
-                   icon: si:homeassistant
-                 - title: Notes
-                   url: http://notes.local.net
-                   icon: si:notion
-                 - title: StrirlingPDF
-                   url: http://pdf.local.net
-                   icon: /assets/stirling.svg
-                 - title: Vikunja
-                   url: http://todo.local.net
-                   icon: /assets/vikunja.png
-                 - title: RSS
-                   url: http://rss.local.net
-                   icon: /assets/yarr.png
+                  - title: HomeAssistant
+                    url: http://has.local.net
+                    icon: si:homeassistant
+                  - title: Notes
+                    url: http://notes.local.net
+                    icon: si:notion
+                  - title: StrirlingPDF
+                    url: http://pdf.local.net
+                    icon: /assets/stirling.svg
+                  - title: Vikunja
+                    url: http://todo.local.net
+                    icon: /assets/vikunja.png
+                  - title: RSS
+                    url: http://rss.local.net
+                    icon: /assets/yarr.png
 
               - title: Infra
                 links:
-                 - title: RevProxy
-                   url: http://10.11.12.7:81/nginx/proxy
-                   icon: si:nginxproxymanager
-                 - title: PiHole
-                   url: http://pihole.local.net/admin
-                   icon: si:pihole
-                 - title: Scrutiny WaWa
-                   url: http://10.11.12.7:8293
-                   icon: /assets/scrutiny.png
-                 - title: Scrutiny Płock
-                   url: http://100.72.96.109:8080/web/dashboard
-                   icon: /assets/scrutiny.png
-                 - title: NAS
-                   url: http://nas.local.net
-                   icon: si:truenas
-                 - title: TARS
-                   url: http://100.72.96.109
-                   icon: si:truenas
+                  - title: RevProxy
+                    url: http://10.11.12.7:81/nginx/proxy
+                    icon: si:nginxproxymanager
+                  - title: PiHole
+                    url: http://pihole.local.net/admin
+                    icon: si:pihole
+                  - title: Scrutiny WaWa
+                    url: http://10.11.12.7:8293
+                    icon: /assets/scrutiny.png
+                  - title: Scrutiny Płock
+                    url: http://100.72.96.109:8080/web/dashboard
+                    icon: /assets/scrutiny.png
+                  - title: NAS
+                    url: http://nas.local.net
+                    icon: si:truenas
+                  - title: TARS
+                    url: http://100.72.96.109
+                    icon: si:truenas
 
               - title: Rozrywka
                 links:
-                 - title: Jellyfin
-                   url: http://vcr.local.net
-                   icon: /assets/jellyfin.png
-                 - title: MeTube
-                   url: http://ytd.local.net
-                   icon: /assets/metube.png
-                 - title: MPD
-                   url: http://10.11.12.7:8666
-                   icon: si:applemusic
-                 - title: Navidrome
-                   url: http://mp3.local.net
-                   icon: /assets/navidrome.png
+                  - title: Jellyfin
+                    url: http://vcr.local.net
+                    icon: /assets/jellyfin.png
+                  - title: MeTube
+                    url: http://ytd.local.net
+                    icon: /assets/metube.png
+                  - title: MPD
+                    url: http://10.11.12.7:8666
+                    icon: si:applemusic
+                  - title: Navidrome
+                    url: http://mp3.local.net
+                    icon: /assets/navidrome.png
 
               - title: Programming
                 links:
-                 - title: Gitea
-                   url: http://git.local.net
-                   icon: /assets/gitea.svg
-                 - title: pgAdmin
-                   url: http://psql.local.net
-                   icon: si:postgresql
+                  - title: Gitea
+                    url: http://git.local.net
+                    icon: /assets/gitea.svg
+                  - title: pgAdmin
+                    url: http://psql.local.net
+                    icon: si:postgresql
 
-              - title: Hoarding  
+              - title: Hoarding
                 links:
-                 - title: Calibre
-                   url: http://books.local.net
-                   icon: si:calibreweb
-                 - title: Paperless
-                   url: http://paper.local.net
-                   icon: si:paperlessngx
-                 - title: PicoShare
-                   url: http://share.mickiewicz.org
-                   icon: /assets/picoshare.png
+                  - title: Calibre
+                    url: http://books.local.net
+                    icon: si:calibreweb
+                  - title: Paperless
+                    url: http://paper.local.net
+                    icon: si:paperlessngx
+                  - title: PicoShare
+                    url: http://share.mickiewicz.org
+                    icon: /assets/picoshare.png
 
           - type: dns-stats
             service: pihole

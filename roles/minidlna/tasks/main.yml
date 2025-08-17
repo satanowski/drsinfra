@@ -1,58 +1,58 @@
---- 
+---
 
-  - name: Spawn a new CT
-    include_role:
-      name: pve
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
 
-  - name: Ensure packages are installed
-    community.general.apk:
-      name: "{{item}}"
-      no_cache: false
-      state: latest
-    with_items:
-      - minidlna
-    delegate_to: "{{ct_ip}}"
+- name: Ensure packages are installed
+  community.general.apk:
+    name: "{{ item }}"
+    no_cache: false
+    state: latest
+  with_items:
+    - minidlna
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Configure name
-    lineinfile:
-      path: "{{cfg_file}}"
-      line: "friendly_name={{app_name}}"
-      state: present
-    delegate_to: "{{ct_ip}}"
-    notify: Reload minidlna
+- name: Configure name
+  ansible.builtin.lineinfile:
+    path: "{{ cfg_file }}"
+    line: "friendly_name={{ app_name }}"
+    state: present
+  delegate_to: "{{ ct_ip }}"
+  notify: Reload minidlna
 
-  - name: Configure inotify
-    lineinfile:
-      path: "{{cfg_file}}"
-      line: "inotify=yes"
-      state: present
-    delegate_to: "{{ct_ip}}"
-    notify: Reload minidlna
+- name: Configure inotify
+  ansible.builtin.lineinfile:
+    path: "{{ cfg_file }}"
+    line: "inotify=yes"
+    state: present
+  delegate_to: "{{ ct_ip }}"
+  notify: Reload minidlna
 
-  - name: Configure media dir 1
-    lineinfile:
-      path: "{{cfg_file}}"
-      line: "media_dir=/opt"
-      state: absent
-    delegate_to: "{{ct_ip}}"
-    notify: Reload minidlna
+- name: Configure media dir 1
+  ansible.builtin.lineinfile:
+    path: "{{ cfg_file }}"
+    line: "media_dir=/opt"
+    state: absent
+  delegate_to: "{{ ct_ip }}"
+  notify: Reload minidlna
 
-  - name: Configure media dir 2
-    lineinfile:
-      path: "{{cfg_file}}"
-      line: "media_dir={{media_dir}}"
-      state: present
-    delegate_to: "{{ct_ip}}"
-    notify: Reload minidlna
+- name: Configure media dir 2
+  ansible.builtin.lineinfile:
+    path: "{{ cfg_file }}"
+    line: "media_dir={{ media_dir }}"
+    state: present
+  delegate_to: "{{ ct_ip }}"
+  notify: Reload minidlna
 
-  - name: Enable minidlna
-    ansible.builtin.service:
-      name: {{ct_name}}
-      enabled: true
-    delegate_to: "{{ct_ip}}"
+- name: Enable minidlna
+  ansible.builtin.service:
+    name: "{{ ct_name }}"
+    enabled: true
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Turn on
-    ansible.builtin.service:
-      name: {{ct_name}}
-      state: restarted
-    delegate_to: "{{ct_ip}}"
+- name: Turn on
+  ansible.builtin.service:
+    name: "{{ ct_name }}"
+    state: restarted
+  delegate_to: "{{ ct_ip }}"

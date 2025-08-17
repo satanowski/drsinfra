@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ansible>=11.8.0",
+    "ansible-lint>=25.8.1",
     "ansible-vault>=4.1.0",
     "jmespath>=1.0.1",
     "proxmoxer>=2.2.0",

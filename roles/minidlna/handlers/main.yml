@@ -1,6 +1,7 @@
+---
 
 - name: Reload minidlna
-  service:
+  ansible.builtin.service:
     name: minidlna
     state: restarted
-  delegate_to: "{{ct_ip}}"
+  delegate_to: "{{ ct_ip }}"

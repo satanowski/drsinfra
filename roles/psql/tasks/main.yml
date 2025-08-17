@@ -1,70 +1,70 @@
---- 
+---
 
-  - name: Spawn a new CT
-    include_role:
-      name: pve
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
 
-  - name: Ensure packages are installed
-    community.general.apk:
-      name: "{{item}}"
-      no_cache: false
-      state: latest      
-    with_items:
-      - postgresql
-      - postgresql-contrib
-      - sudo
-      - py3-psycopg2
-    delegate_to: "{{ct_ip}}"
-  
-  - name: Turn on postgresql
-    ansible.builtin.service:
-      name: postgresql
-      enabled: true
-      state: started
-    delegate_to: "{{ct_ip}}"
-  
-  - name: Wait until the PG is set up
-    ansible.builtin.wait_for:
-      path: "{{pg_hba_conf}}"
-      state: present
-      timeout: 30
-      delay: 3
-    delegate_to: "{{ct_ip}}"
+- name: Ensure packages are installed
+  community.general.apk:
+    name: "{{ item }}"
+    no_cache: false
+    state: latest
+  with_items:
+    - postgresql
+    - postgresql-contrib
+    - sudo
+    - py3-psycopg2
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Allow me to connect from my subnet
-    community.postgresql.postgresql_pg_hba:
-      dest: "{{pg_hba_conf}}"
-      contype: host
-      users: "all"
-      source: "{{pg_db_net}}"
-      databases: all
-      method: md5
-      create: true
-    delegate_to: "{{ct_ip}}"
-    notify: Reload psql
+- name: Turn on postgresql
+  ansible.builtin.service:
+    name: postgresql
+    enabled: true
+    state: started
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Allow connections via network
-    lineinfile:
-      path: "{{pg_conf_file}}"
-      line: "listen_addresses = '*'"
-      state: present
-    delegate_to: "{{ct_ip}}"
-    notify: Reload psql
-    
-  - name: "Create my user"
-    community.postgresql.postgresql_user:
-      name: "{{ pg_db_user }}"
-      password: "{{ pg_db_pass }}"
-      state: present
-      role_attr_flags: LOGIN,CREATEROLE,SUPERUSER
-    delegate_to: "{{ct_ip}}"
+- name: Wait until the PG is set up
+  ansible.builtin.wait_for:
+    path: "{{ pg_hba_conf }}"
+    state: present
+    timeout: 30
+    delay: 3
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Clean up no longer needed packages
-    community.general.apk:
-      name: "{{item}}"
-      no_cache: false
-      state: removed      
-    with_items:
-      - sudo
-      - py3-psycopg2
-    delegate_to: "{{ct_ip}}"
+- name: Allow me to connect from my subnet
+  community.postgresql.postgresql_pg_hba:
+    dest: "{{ pg_hba_conf }}"
+    contype: host
+    users: "all"
+    source: "{{ pg_db_net }}"
+    databases: all
+    method: md5
+    create: true
+  delegate_to: "{{ ct_ip }}"
+  notify: Reload psql
+
+- name: Allow connections via network
+  ansible.builtin.lineinfile:
+    path: "{ {pg_conf_file }}"
+    line: "listen_addresses = '*'"
+    state: present
+  delegate_to: "{{ ct_ip }}"
+  notify: Reload psql
+
+- name: "Create my user"
+  community.postgresql.postgresql_user:
+    name: "{{ pg_db_user }}"
+    password: "{{ pg_db_pass }}"
+    state: present
+    role_attr_flags: LOGIN,CREATEROLE,SUPERUSER
+  delegate_to: "{{ ct_ip }}"
+
+- name: Clean up no longer needed packages
+  community.general.apk:
+    name: "{{ item }}"
+    no_cache: false
+    state: removed
+  with_items:
+    - sudo
+    - py3-psycopg2
+  delegate_to: "{{ ct_ip }}"

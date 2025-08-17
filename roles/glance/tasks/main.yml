@@ -1,70 +1,73 @@
---- 
+---
 
-  - name: Spawn a new CT
-    include_role:
-      name: pve
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
 
-  - name: Get latest release info
-    uri:
-      url: "{{gh_api_latest}}"
-      return_content: yes
-    register: release_info
+- name: Get latest release info
+  ansible.builtin.uri:
+    url: "{{ gh_api_latest }}"
+    return_content: true
+  register: release_info
 
-  - name: Download newest version
-    get_url:
-      url: "{{ item.browser_download_url }}"
-      dest: "/tmp/glance.tar.gz"
-      checksum: "{{item.digest}}"
-    loop: "{{ release_info.json.assets }}"
-    when: "'-linux-amd64.tar.gz' in item.name"
-    delegate_to: "{{ct_ip}}"
+- name: Download newest version
+  ansible.builtin.get_url:
+    url: "{{ item.browser_download_url }}"
+    dest: "/tmp/{{ ct_name }}.tar.gz"
+    checksum: "{{ item.digest }}"
+    mode: "u+rwx"
+  loop: "{{ release_info.json.assets }}"
+  when: "'-linux-amd64.tar.gz' in item.name"
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Create config dir
-    ansible.builtin.file:
-      path: "{{glance_config_dir}}"
-      state: directory
-    delegate_to: "{{ct_ip}}"
+- name: Create config dir
+  ansible.builtin.file:
+    path: "{{ glance_config_dir }}"
+    state: directory
+    mode: "u+rwx"
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Copy configuration files
-    ansible.builtin.copy:
-      src: "files/"
-      dest: "{{glance_config_dir}}/"
-      mode: '0755'
-      owner: root
-      group: root
-    delegate_to: "{{ct_ip}}"
+- name: Copy configuration files
+  ansible.builtin.copy:
+    src: "files/"
+    dest: "{{ glance_config_dir }}/"
+    mode: "0755"
+    owner: root
+    group: root
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Extract glance
-    ansible.builtin.shell:
-      chdir: "/opt"
-      cmd: "tar -xf /tmp/glance.tar.gz"
-    delegate_to: "{{ct_ip}}"
-  
-  - name: Delete glance archive
-    ansible.builtin.file:
-      path: /tmp/glance.tar.gz
-      state: absent
-    delegate_to: "{{ct_ip}}"
+- name: Extract glance
+  ansible.builtin.unarchive:
+    dest: "/opt"
+    src: "/tmp/{{ ct_name }}.tar.gz"
+    remote_src: true
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Create start script
-    lineinfile:
-      create: true
-      mode: u+rwx
-      owner: root
-      group: root
-      path: "/etc/local.d/{{glance_start_script}}"
-      line: "#!/bin/sh\n/opt/glance --config {{glance_config_dir}}/glance.yml &"
-      state: present
-    delegate_to: "{{ct_ip}}"
+- name: Delete glance archive
+  ansible.builtin.file:
+    path: "/tmp/{{ ct_name }}.tar.gz"
+    state: absent
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Enable Glance
-    ansible.builtin.service:
-      name: local
-      enabled: true
-    delegate_to: "{{ct_ip}}"
+- name: Create start script
+  ansible.builtin.lineinfile:
+    create: true
+    mode: u+rwx
+    owner: root
+    group: root
+    path: "/etc/local.d/{{ glance_start_script }}"
+    line: "#!/bin/sh\n/opt/glance --config {{ glance_config_dir }}/glance.yml &"
+    state: present
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Turn on Glance
-    ansible.builtin.service:
-      name: local
-      state: restarted
-    delegate_to: "{{ct_ip}}"
+- name: Enable Glance
+  ansible.builtin.service:
+    name: local
+    enabled: true
+  delegate_to: "{{ ct_ip }}"
+
+- name: Turn on Glance
+  ansible.builtin.service:
+    name: local
+    state: restarted
+  delegate_to: "{{ ct_ip }}"

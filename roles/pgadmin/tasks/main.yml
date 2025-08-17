@@ -1,0 +1,94 @@
+---
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
+
+- name: Ensure packages are installed
+  community.general.apk:
+    name: "{{ item }}"
+    no_cache: false
+    state: latest
+  with_items:
+    - gcc
+    - linux-headers
+    - musl-dev
+    - python3-dev
+    - py3-pip
+  delegate_to: "{{ ct_ip }}"
+
+- name: Create required directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - /var/lib/pgadmin
+    - /var/log/pgadmin
+  delegate_to: "{{ ct_ip }}"
+
+- name: Install pgadmin
+  ansible.builtin.command:
+    cmd: "/usr/bin/pip install --break-system-packages pgadmin4 gunicorn pexpect"
+  delegate_to: "{{ ct_ip }}"
+
+- name: Ensure packages are uninstalled
+  community.general.apk:
+    name: "{{ item }}"
+    no_cache: false
+    state: latest
+  with_items:
+    - gcc
+    - linux-headers
+    - musl-dev
+    - py3-pip
+  delegate_to: "{{ ct_ip }}"
+
+- name: Check marker file
+  ansible.builtin.stat:
+    path: /etc/.pgadmin_initialized
+  register: init_marker
+  delegate_to: "{{ ct_ip }}"
+
+# ansible-lint: disable=ignore-errors
+- name: Run interactive init
+  ansible.builtin.expect:
+    command: pgadmin4
+    responses:
+      "Email address:": "{{ pgadmin_email }}"
+      "Password:": "{{ pgadmin_pass }}"
+      "Retype password:": "{{ pgadmin_pass }}"
+  when: not init_marker.stat.exists
+  ignore_errors: true
+  delegate_to: "{{ ct_ip }}"
+
+- name: Create marker
+  vars:
+    ansible_command_timeout: 10
+  ansible.builtin.file:
+    path: /etc/.pgadmin_initialized
+    state: touch
+    mode: "u+rw"
+  when: not init_marker.stat.exists
+  delegate_to: "{{ ct_ip }}"
+
+- name: Determine site-packages location
+  ansible.builtin.shell: "python3 -c 'import site; print(site.getsitepackages()[0])'"
+  register: sitepack_out
+  delegate_to: "{{ ct_ip }}"
+
+- name: Add a service to start the app at boot
+  ansible.builtin.copy:
+    dest: "/etc/local.d/{{ ct_name }}.start"
+    content: |
+      #!/bin/sh
+      nohup /usr/bin/gunicorn --bind 0.0.0.0:80 --workers=1 --threads=4 --chdir={{ sitepack_out.stdout }}/pgadmin4 pgAdmin4:app &
+    mode: '0755'
+  delegate_to: "{{ ct_ip }}"
+
+- name: Add service to default runlevel (enable at boot)
+  ansible.builtin.command: rc-update add local default
+  delegate_to: "{{ ct_ip }}"
+
+- name: Start the service
+  ansible.builtin.command: "rc-service local start"
+  delegate_to: "{{ ct_ip }}"

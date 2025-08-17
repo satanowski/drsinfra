@@ -1,34 +1,35 @@
---- 
-  - name: Override variable during playbook
-    set_fact:
-      pve_unprivileged: no
+---
+- name: Override variable during playbook
+  ansible.builtin.set_fact:
+    pve_unprivileged: false
 
-  - name: Spawn a new CT
-    include_role:
-      name: pve
+- name: Spawn a new CT
+  ansible.builtin.include_role:
+    name: pve
 
-  - name: apt get update
-    ansible.builtin.apt:
-      upgrade: dist
-      update_cache: yes
-      dpkg_options: 'force-confold,force-confdef'
-    delegate_to: "{{ct_ip}}"
+- name: Apt get update
+  ansible.builtin.apt:
+    upgrade: dist
+    update_cache: true
+    dpkg_options: "force-confold,force-confdef"
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Download install script
-    get_url:
-      url: "{{jelly_sh}}"
-      dest: "/tmp/{{ct_name}}.sh"
-    delegate_to: "{{ct_ip}}"
+- name: Download install script
+  ansible.builtin.get_url:
+    url: "{{ jelly_sh }}"
+    dest: "/tmp/{{ ct_name }}.sh"
+    mode: "u+rwx"
+  delegate_to: "{{ ct_ip }}"
 
-  - name: Install jelly
-    environment:
-      SKIP_CONFIRM: 1
-    ansible.builtin.shell:
-      cmd: "/bin/bash /tmp/{{ct_name}}.sh"
-    delegate_to: "{{ct_ip}}"
+- name: Install jelly
+  environment:
+    SKIP_CONFIRM: "1"
+  ansible.builtin.command:
+    cmd: "/bin/bash /tmp/{{ ct_name }}.sh"
+  delegate_to: "{{ ct_ip }}"
 
-  - name: apt get tidy up
-    ansible.builtin.apt:
-      autoremove: yes
-      purge: true
-    delegate_to: "{{ct_ip}}"
+- name: Apt get tidy up
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  delegate_to: "{{ ct_ip }}"
